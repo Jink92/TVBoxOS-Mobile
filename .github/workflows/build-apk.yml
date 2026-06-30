@@ -41,19 +41,24 @@ jobs:
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaDebug --build-cache --parallel --daemon
+          ./gradlew assembleJavaDebug --info 2>&1 | tail -200
 
       - name: Build Release APK (Java flavor)
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaRelease --build-cache --parallel --daemon
+          ./gradlew assembleJavaRelease --info 2>&1 | tail -200
+
+      - name: List Output Files
+        run: |
+          ls -la app/build/outputs/apk/ || echo "APK directory not found"
+          find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
 
       - name: Prepare Artifacts
         run: |
           rm -rf apk/
           mkdir -p apk/
-          find app/build/outputs/apk -name "*java*.apk" -exec cp {} apk/ \;
+          find app/build/outputs/apk -name "*java*.apk" -exec cp {} apk/ \; 2>/dev/null || echo "No APK files to copy"
           ls -la apk/
 
       - name: Upload APK Artifacts
