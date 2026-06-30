@@ -36,9 +36,19 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          # Create local.properties pointing to Android SDK
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           echo "local.properties created with sdk.dir=$ANDROID_HOME"
+
+      - name: Generate Keystore
+        run: |
+          keytool -genkey -v -keystore release.keystore \
+            -alias release -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=TVBox, OU=TVBox, O=TVBox, L=Beijing, ST=Beijing, C=86"
+          echo "KEYSTORE_PATH=${{ github.workspace }}/release.keystore" >> $GITHUB_ENV
+          echo "KEYSTORE_PASS=android" >> $GITHUB_ENV
+          echo "KEY_ALIAS=release" >> $GITHUB_ENV
+          echo "KEY_PASS=android" >> $GITHUB_ENV
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -60,7 +70,6 @@ jobs:
       - name: List Output Files
         run: |
           ls -la app/build/outputs/apk/ 2>/dev/null || echo "APK directory not found"
-          ls -la local.properties 2>/dev/null || echo "local.properties not found"
           find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
 
       - name: Prepare Artifacts
