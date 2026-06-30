@@ -41,17 +41,17 @@ jobs:
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaDebug --info 2>&1 | tail -200
+          ./gradlew assembleJavaDebug 2>&1 | tail -300
 
       - name: Build Release APK (Java flavor)
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaRelease --info 2>&1 | tail -200
+          ./gradlew assembleJavaRelease 2>&1 | tail -300
 
       - name: List Output Files
         run: |
-          ls -la app/build/outputs/apk/ || echo "APK directory not found"
+          ls -la app/build/outputs/apk/ 2>/dev/null || echo "APK directory not found"
           find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
 
       - name: Prepare Artifacts
