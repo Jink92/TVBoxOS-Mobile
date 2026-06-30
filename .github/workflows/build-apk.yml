@@ -10,7 +10,7 @@ on:
       buildType:
         description: '构建类型'
         required: false
-        default: 'both'
+        default: 'debug'
         type: choice
         options:
           - debug
@@ -72,4 +72,4 @@ jobs:
         with:
           name: TVBoxOS-Mobile-APK
           path: |
-            app/build/outputs/apk/**/*.apk
+            **/*.apk
