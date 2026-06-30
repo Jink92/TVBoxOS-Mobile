@@ -1,0 +1,64 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      buildType:
+        description: '构建类型'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - debug
+          - release
+          - both
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 7.5
+
+      - name: Build Debug APK (Java flavor)
+        if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
+        run: |
+          chmod +x gradlew
+          ./gradlew javaDebug assembleDebug --build-cache --parallel --daemon 2>&1 | tail -50
+
+      - name: Build Release APK (Java flavor)
+        if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
+        run: |
+          chmod +x gradlew
+          ./gradlew javaRelease assembleRelease --build-cache --parallel --daemon 2>&1 | tail -50
+
+      - name: Prepare Artifacts
+        run: |
+          rm -rf apk/
+          mkdir -p apk/
+          find app/build/outputs/apk -name "*java*.apk" -exec cp {} apk/ \;
+          ls -la apk/
+
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TVBoxOS-APK
+          path: |
+            apk/*.apk

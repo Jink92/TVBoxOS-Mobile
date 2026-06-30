@@ -194,7 +194,7 @@ public class GridFragment extends BaseLazyFragment {
         if(isFolederMode()){
             mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
         }else{
-            int spanCount = isBaseOnWidth() ? 5 : 6;
+            int spanCount = isBaseOnWidth() ? 3 : 2;
             if (style != null) {
                 spanCount = ImgUtil.spanCountByStyle(style, spanCount);
             }
@@ -216,25 +216,15 @@ public class GridFragment extends BaseLazyFragment {
         mGridView.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
             public void onItemPreSelected(TvRecyclerView parent, View itemView, int position) {
-                itemView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
             }
 
             @Override
             public void onItemSelected(TvRecyclerView parent, View itemView, int position) {
-                itemView.animate().scaleX(1.05f).scaleY(1.05f).setDuration(300).setInterpolator(new BounceInterpolator()).start();
             }
 
             @Override
             public void onItemClick(TvRecyclerView parent, View itemView, int position) {
 
-            }
-        });
-        mGridView.setOnInBorderKeyEventListener(new TvRecyclerView.OnInBorderKeyEventListener() {
-            @Override
-            public boolean onInBorderKeyEvent(int direction, View focused) {
-                if (direction == View.FOCUS_UP) {
-                }
-                return false;
             }
         });
         gridAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
