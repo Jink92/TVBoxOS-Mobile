@@ -40,7 +40,6 @@ import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseVbActivity;
 import com.github.tvbox.osc.bean.AbsXml;
-import com.github.tvbox.osc.bean.CastVideo;
 import com.github.tvbox.osc.bean.Movie;
 import com.github.tvbox.osc.bean.SourceBean;
 import com.github.tvbox.osc.bean.VodInfo;
@@ -54,7 +53,6 @@ import com.github.tvbox.osc.ui.adapter.SeriesAdapter;
 import com.github.tvbox.osc.ui.adapter.SeriesFlagAdapter;
 import com.github.tvbox.osc.ui.dialog.AllVodSeriesBottomDialog;
 import com.github.tvbox.osc.ui.dialog.AllVodSeriesRightDialog;
-import com.github.tvbox.osc.ui.dialog.CastListDialog;
 import com.github.tvbox.osc.ui.dialog.QuickSearchDialog;
 import com.github.tvbox.osc.ui.dialog.VideoDetailDialog;
 import com.github.tvbox.osc.ui.fragment.PlayFragment;
@@ -193,9 +191,6 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 sortSeries();
             }
         });
-        mBinding.tvCast.setOnClickListener(v -> {
-            showCastDialog();
-        });
         mBinding.tvCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -300,16 +295,6 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 
             seriesAdapter.notifyDataSetChanged();
         }
-    }
-
-    public void showCastDialog() {
-
-        VodInfo.VodSeries vodSeries = vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex);
-        new XPopup.Builder(this)
-                .maxWidth(ConvertUtils.dp2px(360))
-                .asCustom(new CastListDialog(this,new CastVideo(vodSeries.name
-                        ,TextUtils.isEmpty(playFragment.getFinalUrl())?vodSeries.url:playFragment.getFinalUrl())))
-                .show();
     }
 
     public void showAllSeriesDialog(){

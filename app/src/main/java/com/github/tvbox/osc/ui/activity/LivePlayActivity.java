@@ -33,7 +33,6 @@ import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseActivity;
-import com.github.tvbox.osc.bean.CastVideo;
 import com.github.tvbox.osc.bean.Epginfo;
 import com.github.tvbox.osc.bean.LiveChannelGroup;
 import com.github.tvbox.osc.bean.LiveChannelItem;
@@ -51,7 +50,6 @@ import com.github.tvbox.osc.ui.adapter.LiveEpgDateAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveSettingGroupAdapter;
 import com.github.tvbox.osc.ui.adapter.LiveSettingItemAdapter;
 import com.github.tvbox.osc.ui.adapter.MyEpgAdapter;
-import com.github.tvbox.osc.ui.dialog.CastListDialog;
 import com.github.tvbox.osc.ui.dialog.LivePasswordDialog;
 import com.github.tvbox.osc.ui.tv.widget.ChannelListView;
 import com.github.tvbox.osc.ui.tv.widget.ViewObj;
@@ -224,7 +222,6 @@ public class LivePlayActivity extends BaseActivity {
         tvLeftChannelListLayout = findViewById(R.id.tvLeftChannnelListLayout);
         clock = findViewById(R.id.container_top_right_menu);
         findViewById(R.id.quit).setOnClickListener(view -> finish());
-        findViewById(R.id.cast).setOnClickListener(view -> showCastDialog());
         findViewById(R.id.setting).setOnClickListener(view -> showSettingGroup());
         findViewById(R.id.pre).setOnClickListener(view -> {
             mHandler.removeCallbacks(mHideChannelListRun);
@@ -2036,12 +2033,5 @@ public class LivePlayActivity extends BaseActivity {
         countDownTimer3.start();
     }
 
-    public void showCastDialog() {
-        if (currentLiveChannelItem!=null){
-            new XPopup.Builder(this)
-                    .asCustom(new CastListDialog(this,new CastVideo(currentLiveChannelItem.getChannelName(),currentLiveChannelItem.getUrl())))
-                    .show();
-        }
-    }
 
 }

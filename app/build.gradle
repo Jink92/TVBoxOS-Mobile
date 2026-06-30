@@ -88,7 +88,7 @@ android {
         viewBinding true
     }
 
-    packagingOptions {//引入dlna-cast时的文件冲突
+    packagingOptions {
         exclude 'META-INF/beans.xml'
     }
 }
@@ -131,9 +131,6 @@ dependencies {
     implementation project(":quickjs")
     implementation 'net.sourceforge.streamsupport:android-retrofuture:1.7.4'
 
-    implementation('org.xwalk:xwalk_shared_library:23.53.589.4') {
-        exclude group: 'com.android.support'
-    }
     implementation 'com.lzy.net:okgo:3.0.4'
     // implementation 'com.tencent.bugly:crashreport_upgrade:latest.release'
     implementation 'com.owen:tv-recyclerview:3.0.0'
@@ -171,6 +168,4 @@ dependencies {
     implementation 'com.hyman:flowlayout-lib:1.1.2'
     //崩溃
     implementation project(":crash")
-    //dlna投屏
-    implementation 'com.github.devin1014.DLNA-Cast:dlna-dmc:V1.0.0'
 }
