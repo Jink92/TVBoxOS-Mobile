@@ -14,6 +14,8 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
+import com.google.android.exoplayer2.trackselection.DefaultTrackNameProvider;
+import com.google.android.exoplayer2.trackselection.TrackNameProvider;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import xyz.doikki.videoplayer.exo.ExoMediaPlayer;
@@ -21,15 +23,19 @@ import xyz.doikki.videoplayer.exo.ExoMediaPlayer;
 public class EXOmPlayer extends ExoMediaPlayer {
     private String audioId = "";
     private String subtitleId = "";
+    private final TrackNameProvider trackNameProvider = new DefaultTrackNameProvider(mAppContext);
 
     public EXOmPlayer(Context context) {
         super(context);
     }
 
+    private DefaultTrackSelector getDefaultTrackSelector() {
+        return (DefaultTrackSelector) mTrackSelector;
+    }
 
     public TrackInfo getTrackInfo() {
         TrackInfo data = new TrackInfo();
-        MappedTrackInfo trackInfo = getTrackSelector().getCurrentMappedTrackInfo();
+        MappedTrackInfo trackInfo = getDefaultTrackSelector().getCurrentMappedTrackInfo();
         if (trackInfo != null) {
             getExoSelectedTrack();
             for (int groupArrayIndex = 0; groupArrayIndex < trackInfo.getRendererCount(); groupArrayIndex++) {
@@ -69,45 +75,47 @@ public class EXOmPlayer extends ExoMediaPlayer {
     private void getExoSelectedTrack() {
         audioId = "";
         subtitleId = "";
-        for (Tracks.Group group : mMediaPlayer.getCurrentTracks().getGroups()) {
-            for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
-                Format format = group.getTrackFormat(trackIndex);
-                if (MimeTypes.isAudio(format.sampleMimeType)) {
-                    audioId = format.id;
-                }
-                if (MimeTypes.isText(format.sampleMimeType)) {
-                    subtitleId = format.id;
+        if (mInternalPlayer != null && mInternalPlayer.getCurrentTracks() != null) {
+            for (Tracks.Group group : mInternalPlayer.getCurrentTracks().getGroups()) {
+                for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+                    Format format = group.getTrackFormat(trackIndex);
+                    if (MimeTypes.isAudio(format.sampleMimeType)) {
+                        audioId = format.id;
+                    }
+                    if (MimeTypes.isText(format.sampleMimeType)) {
+                        subtitleId = format.id;
+                    }
                 }
             }
         }
     }
 
     public void selectExoTrack(@Nullable TrackInfoBean videoTrackBean) {
-        MappedTrackInfo trackInfo = getTrackSelector().getCurrentMappedTrackInfo();
+        MappedTrackInfo trackInfo = getDefaultTrackSelector().getCurrentMappedTrackInfo();
         if (trackInfo != null) {
             if (videoTrackBean == null) {
                 for (int renderIndex = 0; renderIndex < trackInfo.getRendererCount(); renderIndex++) {
                     if (trackInfo.getRendererType(renderIndex) == C.TRACK_TYPE_TEXT) {
-                        DefaultTrackSelector.Parameters.Builder parametersBuilder = getTrackSelector().getParameters().buildUpon();
+                        DefaultTrackSelector.Parameters.Builder parametersBuilder = getDefaultTrackSelector().getParameters().buildUpon();
                         parametersBuilder.setRendererDisabled(renderIndex, true);
-                        getTrackSelector().setParameters(parametersBuilder);
+                        getDefaultTrackSelector().setParameters(parametersBuilder);
                         break;
                     }
                 }
             } else {
                 TrackGroupArray trackGroupArray = trackInfo.getTrackGroups(videoTrackBean.renderId);
                 SelectionOverride override = new SelectionOverride(videoTrackBean.trackGroupId, videoTrackBean.trackId);
-                DefaultTrackSelector.Parameters.Builder parametersBuilder = getTrackSelector().buildUponParameters();
+                DefaultTrackSelector.Parameters.Builder parametersBuilder = getDefaultTrackSelector().getParameters().buildUpon();
                 parametersBuilder.setRendererDisabled(videoTrackBean.renderId, false);
                 parametersBuilder.setSelectionOverride(videoTrackBean.renderId, trackGroupArray, override);
-                getTrackSelector().setParameters(parametersBuilder);
+                getDefaultTrackSelector().setParameters(parametersBuilder);
             }
         }
 
     }
 
     public void setOnTimedTextListener(Player.Listener listener) {
-        mMediaPlayer.addListener(listener);
+        mInternalPlayer.addListener(listener);
     }
 
 }
