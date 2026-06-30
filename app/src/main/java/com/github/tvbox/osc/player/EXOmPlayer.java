@@ -14,8 +14,6 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
-import com.google.android.exoplayer2.trackselection.DefaultTrackNameProvider;
-import com.google.android.exoplayer2.trackselection.TrackNameProvider;
 import com.google.android.exoplayer2.util.MimeTypes;
 
 import xyz.doikki.videoplayer.exo.ExoMediaPlayer;
@@ -23,7 +21,10 @@ import xyz.doikki.videoplayer.exo.ExoMediaPlayer;
 public class EXOmPlayer extends ExoMediaPlayer {
     private String audioId = "";
     private String subtitleId = "";
-    private final TrackNameProvider trackNameProvider = new DefaultTrackNameProvider(mAppContext);
+
+    private String getTrackName(Format format) {
+        return format.id + " " + format.codecs + " " + (format.language != null ? format.language : "");
+    }
 
     public EXOmPlayer(Context context) {
         super(context);
@@ -45,7 +46,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
                     for (int formatIndex = 0; formatIndex < group.length; formatIndex++) {
                         Format format = group.getFormat(formatIndex);
                         if (MimeTypes.isAudio(format.sampleMimeType)) {
-                            String trackName = (data.getAudio().size() + 1) + "：" + trackNameProvider.getTrackName(format) + "[" + format.codecs + "]";
+                            String trackName = (data.getAudio().size() + 1) + "：" + getTrackName(format) + "[" + format.codecs + "]";
                             TrackInfoBean t = new TrackInfoBean();
                             t.name = trackName;
                             t.language = "";
@@ -55,7 +56,7 @@ public class EXOmPlayer extends ExoMediaPlayer {
                             t.renderId = groupArrayIndex;
                             data.addAudio(t);
                         } else if (MimeTypes.isText(format.sampleMimeType)) {
-                            String trackName = (data.getSubtitle().size() + 1) + "：" + trackNameProvider.getTrackName(format);
+                            String trackName = (data.getSubtitle().size() + 1) + "：" + getTrackName(format);
                             TrackInfoBean t = new TrackInfoBean();
                             t.name = trackName;
                             t.language = "";
