@@ -55,7 +55,7 @@ jobs:
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace 2>&1
+          ./gradlew assembleDebug 2>&1 | tee gradle.log; echo "---GREP_ERRORS---"; grep -n "error:\|FAILURE\|What went wrong" gradle.log || echo "No explicit errors found"
 
       - name: Build Release APK
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
