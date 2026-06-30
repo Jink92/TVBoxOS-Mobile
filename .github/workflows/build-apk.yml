@@ -41,13 +41,13 @@ jobs:
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew javaDebug assembleDebug --build-cache --parallel --daemon 2>&1 | tail -50
+          ./gradlew assembleJavaDebug --build-cache --parallel --daemon
 
       - name: Build Release APK (Java flavor)
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew javaRelease assembleRelease --build-cache --parallel --daemon 2>&1 | tail -50
+          ./gradlew assembleJavaRelease --build-cache --parallel --daemon
 
       - name: Prepare Artifacts
         run: |
