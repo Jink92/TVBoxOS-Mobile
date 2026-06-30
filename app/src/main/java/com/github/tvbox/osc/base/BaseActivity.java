@@ -46,6 +46,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         try {
             if (screenRatio < 0) {
                 DisplayMetrics dm = new DisplayMetrics();
@@ -57,7 +58,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         } catch (Throwable th) {
             th.printStackTrace();
         }
-        super.onCreate(savedInstanceState);
         setContentView(getLayoutResID());
         mContext = this;
         CutoutUtil.adaptCutoutAboveAndroidP(mContext, true);//设置刘海
@@ -174,16 +174,24 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
     @Override
     public float getSizeInDp() {
-        return isBaseOnWidth() ? 1280 : 720;
+        try {
+            return isBaseOnWidth() ? 1280 : 720;
+        } catch (Throwable th) {
+            return 1280;
+        }
     }
 
     @Override
     public boolean isBaseOnWidth() {
-        DisplayMetrics dm = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int width = dm.widthPixels;
-        int height = dm.heightPixels;
-        return width > height;
+        try {
+            DisplayMetrics dm = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(dm);
+            int width = dm.widthPixels;
+            int height = dm.heightPixels;
+            return width > height;
+        } catch (Throwable th) {
+            return true;
+        }
     }
 
     protected static BitmapDrawable globalWp = null;

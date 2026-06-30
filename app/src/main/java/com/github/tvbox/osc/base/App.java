@@ -1,6 +1,7 @@
 package com.github.tvbox.osc.base;
 
 import android.app.Activity;
+import android.os.Environment;
 import androidx.multidex.MultiDexApplication;
 
 import com.github.tvbox.osc.bean.VodInfo;
@@ -21,6 +22,13 @@ import com.p2p.P2PClass;
 import com.whl.quickjs.android.QuickJSLoader;
 import com.github.catvod.crawler.JsLoader;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
 
@@ -38,27 +46,61 @@ public class App extends MultiDexApplication {
 
     @Override
     public void onCreate() {
-        super.onCreate();
-        instance = this;
-        initParams();
-        // OKGo
-        OkGoHelper.init(); //台标获取
-        EpgUtil.init();
-        // 初始化Web服务器
-        ControlManager.init(this);
-        //初始化数据库
-        AppDataManager.init();
-        LoadSir.beginBuilder()
-                .addCallback(new EmptyCallback())
-                .addCallback(new LoadingCallback())
-                .commit();
-        AutoSizeConfig.getInstance().setCustomFragment(true).getUnitsManager()
-                .setSupportDP(false)
-                .setSupportSP(false)
-                .setSupportSubunits(Subunits.MM);
-        PlayerHelper.init();
-        QuickJSLoader.init();
-        FileUtils.cleanPlayerCache();
+        // 捕获所有未处理异常
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                try {
+                    File crashDir = new File(getExternalCacheDir(), "crash");
+                    if (!crashDir.exists()) crashDir.mkdirs();
+                    File crashFile = new File(crashDir, "crash_" + System.currentTimeMillis() + ".txt");
+                    PrintWriter pw = new PrintWriter(new FileWriter(crashFile));
+                    pw.println("Time: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+                    pw.println("Thread: " + t.getName());
+                    e.printStackTrace(pw);
+                    pw.close();
+                    LOG.e("Crash saved to: " + crashFile.getAbsolutePath());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                // 继续默认的异常处理
+                if (Thread.getDefaultUncaughtExceptionHandler() != null) {
+                    Thread.getDefaultUncaughtExceptionHandler().uncaughtException(t, e);
+                }
+            }
+        });
+
+        try {
+            super.onCreate();
+            instance = this;
+            initParams();
+            // OKGo
+            OkGoHelper.init(); //台标获取
+            EpgUtil.init();
+            // 初始化Web服务器
+            ControlManager.init(this);
+            //初始化数据库
+            AppDataManager.init();
+            LoadSir.beginBuilder()
+                    .addCallback(new EmptyCallback())
+                    .addCallback(new LoadingCallback())
+                    .commit();
+            AutoSizeConfig.getInstance().setCustomFragment(true).getUnitsManager()
+                    .setSupportDP(false)
+                    .setSupportSP(false)
+                    .setSupportSubunits(Subunits.MM);
+            PlayerHelper.init();
+            QuickJSLoader.init();
+            FileUtils.cleanPlayerCache();
+        } catch (Throwable th) {
+            LOG.e("App init error: " + th.getMessage());
+            try {
+                File crashFile = new File(getExternalCacheDir(), "init_error.txt");
+                PrintWriter pw = new PrintWriter(new FileWriter(crashFile));
+                th.printStackTrace(pw);
+                pw.close();
+            } catch (Exception ignored) {}
+        }
     }
 
     private void initParams() {
