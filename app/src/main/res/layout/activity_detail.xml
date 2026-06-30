@@ -147,6 +147,28 @@
                     android:textColor="@color/color_CCFFFFFF"
                     android:textSize="@dimen/ts_16" />
 
+                <TextView
+                    android:id="@+id/tvPlayUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/vs_5"
+                    android:focusable="false"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="@color/color_CCFFFFFF"
+                    android:textSize="@dimen/ts_16" />
+
+                <TextView
+                    android:id="@+id/tvDes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/vs_5"
+                    android:focusable="false"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:textColor="@color/color_CCFFFFFF"
+                    android:textSize="@dimen/ts_16" />
+
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="0mm"
