@@ -3,13 +3,11 @@ package com.github.tvbox.osc.ui.dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
@@ -112,8 +110,7 @@ public class BackupDialog extends BaseDialog {
                                 sharedPreferences.edit().putString(key, value).commit();
                             }
                         }
-                        Toast.makeText(getContext(), "恢复成功,即将重启应用!", Toast.LENGTH_SHORT).show();
-                        new Handler().postDelayed(() -> AppUtils.relaunchApp(true),2000);
+                        Toast.makeText(getContext(), "恢复成功,请重启应用!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getContext(), "Hawk恢复失败!", Toast.LENGTH_SHORT).show();
                     }

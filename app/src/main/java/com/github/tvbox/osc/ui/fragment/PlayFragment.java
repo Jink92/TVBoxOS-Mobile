@@ -21,6 +21,7 @@ import android.webkit.CookieManager;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -37,11 +38,9 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.blankj.utilcode.util.ColorUtils;
+import com.blankj.utilcode.util.GsonUtils;
 import com.blankj.utilcode.util.LogUtils;
-import com.blankj.utilcode.util.RegexUtils;
 import com.blankj.utilcode.util.ScreenUtils;
-import com.blankj.utilcode.util.SpanUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.github.catvod.crawler.Spider;
 import com.github.tvbox.osc.R;
@@ -62,7 +61,6 @@ import com.github.tvbox.osc.player.TrackInfoBean;
 import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.server.RemoteServer;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
-import com.github.tvbox.osc.ui.adapter.ParseAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.PlayingControlDialog;
 import com.github.tvbox.osc.ui.dialog.PlayingControlRightDialog;
@@ -76,6 +74,7 @@ import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.util.VideoParseRuler;
+import com.github.tvbox.osc.util.XWalkUtils;
 import com.github.tvbox.osc.util.thunder.Jianpian;
 import com.github.tvbox.osc.util.thunder.Thunder;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
@@ -86,6 +85,7 @@ import com.gyf.immersionbar.ImmersionBar;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.BasePopupView;
 import com.lxj.xpopup.enums.PopupPosition;
+import com.lxj.xpopup.interfaces.OnConfirmListener;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.HttpHeaders;
@@ -100,7 +100,15 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkJavascriptResult;
+import org.xwalk.core.XWalkResourceClient;
+import org.xwalk.core.XWalkSettings;
+import org.xwalk.core.XWalkUIClient;
+import org.xwalk.core.XWalkView;
+import org.xwalk.core.XWalkWebResourceRequest;
+import org.xwalk.core.XWalkWebResourceResponse;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -339,12 +347,6 @@ public class PlayFragment extends BaseLazyFragment {
             public void pip() {
                 activity.enterPip();
             }
-
-            @Override
-            public void showParseRoot(boolean show, ParseAdapter adapter) {
-                DetailActivity activity = (DetailActivity)mActivity;
-                activity.showParseRoot(show,adapter);
-            }
         });
         mVideoView.setVideoController(mController);
     }
@@ -425,11 +427,6 @@ public class PlayFragment extends BaseLazyFragment {
             public void setTextStyle(int style) {
                 setSubtitleViewTextStyle(style);
             }
-
-            @Override
-            public void subtitleOpen(boolean b) {
-                mController.openSubtitle(b);
-            }
         });
         subtitleDialog.setSearchSubtitleListener(new SubtitleDialog.SearchSubtitleListener() {
             @Override
@@ -505,6 +502,7 @@ public class PlayFragment extends BaseLazyFragment {
         List<TrackInfoBean> bean = trackInfo.getAudio();
         if (bean.size() < 1) return;
         SelectDialog<TrackInfoBean> dialog = new SelectDialog<>(getActivity());
+        dialog.setShowCenter(true);
         dialog.setTip("切换音轨");
         dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<TrackInfoBean>() {
             @Override
@@ -539,7 +537,7 @@ public class PlayFragment extends BaseLazyFragment {
                 String name = val.name.replace("AUDIO,", "");
                 name = name.replace("N/A,", "");
                 name = name.replace(" ", "");
-                return name + (TextUtils.isEmpty(val.language) ? "" : " " + val.language);
+                return val.trackId + " : " + val.language + " : " + name;
             }
         }, new DiffUtil.ItemCallback<TrackInfoBean>() {
             @Override
@@ -572,6 +570,7 @@ public class PlayFragment extends BaseLazyFragment {
         List<TrackInfoBean> bean = trackInfo.getSubtitle();
         if (bean.size() < 1) return;
         SelectDialog<TrackInfoBean> dialog = new SelectDialog<>(mActivity);
+        dialog.setShowCenter(true);
         dialog.setTip("切换内置字幕");
         dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<TrackInfoBean>() {
             @Override
@@ -579,7 +578,7 @@ public class PlayFragment extends BaseLazyFragment {
                 mController.mSubtitleView.setVisibility(View.VISIBLE);
                 try {
                     for (TrackInfoBean subtitle : bean) {
-                        subtitle.selected =subtitle.trackGroupId == value.trackGroupId && subtitle.trackId == value.trackId;
+                        subtitle.selected = subtitle.trackId == value.trackId;
                     }
                     mediaPlayer.pause();
                     long progress = mediaPlayer.getCurrentPosition();//保存当前进度，ijk 切换轨道 会有快进几秒
@@ -604,7 +603,6 @@ public class PlayFragment extends BaseLazyFragment {
                             public void run() {
                                 mediaPlayer.seekTo(progress);
                                 mediaPlayer.start();
-                                mController.startProgress();
                             }
                         }, 800);
                     }
@@ -634,26 +632,13 @@ public class PlayFragment extends BaseLazyFragment {
 
     void setTip(String msg, boolean loading, boolean err) {
         if (!isAdded()) return;
-        //影魔
-        requireActivity().runOnUiThread(() -> {
-            mPlayLoadTip.setText(msg);
-            mPlayLoadTip.setVisibility(View.VISIBLE);
-            mPlayLoading.setVisibility(loading ? View.VISIBLE : View.GONE);
-            mPlayLoadErr.setVisibility(err ? View.VISIBLE : View.GONE);
-
-            if ("视频播放出错".equals(msg)){
-                if (!retriedSwitchPlayer){
-                    ToastUtils.showShort("播放出错,正在尝试切换播放器");
-                    retriedSwitchPlayer = true;
-                    mController.mPlayerBtn.performClick();
-                }else {
-                    SpanUtils.with(mPlayLoadTip)
-                            .append("视频播放出错，")
-                            .append("切换播放器")
-                            .setClickSpan(ColorUtils.getColor(R.color.orange), false, view -> {
-                                mController.mPlayerBtn.performClick();
-                            }).create();
-                }
+        requireActivity().runOnUiThread(new Runnable() { //影魔
+            @Override
+            public void run() {
+                mPlayLoadTip.setText(msg);
+                mPlayLoadTip.setVisibility(View.VISIBLE);
+                mPlayLoading.setVisibility(loading ? View.VISIBLE : View.GONE);
+                mPlayLoadErr.setVisibility(err ? View.VISIBLE : View.GONE);
             }
         });
     }
@@ -672,6 +657,11 @@ public class PlayFragment extends BaseLazyFragment {
                     if (finish) {
                         Toast.makeText(mContext, err, Toast.LENGTH_SHORT).show();
                     } else {
+                        if (err.equals("视频播放出错") && !retriedSwitchPlayer){
+                            ToastUtils.showShort("播放出错,正在尝试切换播放器");
+                            retriedSwitchPlayer = true;
+                            mController.mPlayerBtn.performClick();
+                        }
                         setTip(err, false, true);
                     }
                 }
@@ -945,8 +935,6 @@ public class PlayFragment extends BaseLazyFragment {
                             subtitle.content = ss.toString();
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
-                    } else{
-                        mController.mSubtitleView.onSubtitleChanged(null);
                     }
                 }
             });
@@ -1581,6 +1569,8 @@ public class PlayFragment extends BaseLazyFragment {
         }
     }
 
+    // webview
+    private XWalkView mXwalkWebView;
     private WebView mSysWebView;
     private final Map<String, Boolean> loadedUrls = new HashMap<>();
     private LinkedList<String> loadFoundVideoUrls = new LinkedList<>();
@@ -1588,28 +1578,77 @@ public class PlayFragment extends BaseLazyFragment {
     private final AtomicInteger loadFoundCount = new AtomicInteger(0);
 
     void loadWebView(String url) {
-        if (mSysWebView == null) {
-            mSysWebView = new MyWebView(mContext);
-            configWebViewSys(mSysWebView);
-            loadUrl(url);
+        if (mSysWebView == null && mXwalkWebView == null) {
+            boolean useSystemWebView = Hawk.get(HawkConfig.PARSE_WEBVIEW, true);
+            if (!useSystemWebView) {
+                XWalkUtils.tryUseXWalk(mContext, new XWalkUtils.XWalkState() {
+                    @Override
+                    public void success() {
+                        initWebView(!sourceBean.getClickSelector().isEmpty());
+                        loadUrl(url);
+                    }
+
+                    @Override
+                    public void fail() {
+                        Toast.makeText(mContext, "XWalkView不兼容，已替换为系统自带WebView", Toast.LENGTH_SHORT).show();
+                        initWebView(true);
+                        loadUrl(url);
+                    }
+
+                    @Override
+                    public void ignore() {
+                        Toast.makeText(mContext, "XWalkView运行组件未下载，已替换为系统自带WebView", Toast.LENGTH_SHORT).show();
+                        initWebView(true);
+                        loadUrl(url);
+                    }
+                });
+            } else {
+                initWebView(true);
+                loadUrl(url);
+            }
         } else {
             loadUrl(url);
         }
     }
 
+    void initWebView(boolean useSystemWebView) {
+        if (useSystemWebView) {
+            mSysWebView = new MyWebView(mContext);
+            configWebViewSys(mSysWebView);
+        } else {
+            mXwalkWebView = new MyXWalkView(mContext);
+            configWebViewX5(mXwalkWebView);
+        }
+    }
+
     void loadUrl(String url) {
         if (!isAdded()) return;
-        requireActivity().runOnUiThread(() -> {
-            if (mSysWebView != null) {
-                mSysWebView.stopLoading();
-                if (webUserAgent != null) {
-                    mSysWebView.getSettings().setUserAgentString(webUserAgent);
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mXwalkWebView != null) {
+                    mXwalkWebView.stopLoading();
+                    if (webUserAgent != null) {
+                        mXwalkWebView.getSettings().setUserAgentString(webUserAgent);
+                    }
+                    //mXwalkWebView.clearCache(true);
+                    if (webHeaderMap != null) {
+                        mXwalkWebView.loadUrl(url, webHeaderMap);
+                    } else {
+                        mXwalkWebView.loadUrl(url);
+                    }
                 }
-                //mSysWebView.clearCache(true);
-                if (webHeaderMap != null) {
-                    mSysWebView.loadUrl(url, webHeaderMap);
-                } else {
-                    mSysWebView.loadUrl(url);
+                if (mSysWebView != null) {
+                    mSysWebView.stopLoading();
+                    if (webUserAgent != null) {
+                        mSysWebView.getSettings().setUserAgentString(webUserAgent);
+                    }
+                    //mSysWebView.clearCache(true);
+                    if (webHeaderMap != null) {
+                        mSysWebView.loadUrl(url, webHeaderMap);
+                    } else {
+                        mSysWebView.loadUrl(url);
+                    }
                 }
             }
         });
@@ -1617,23 +1656,36 @@ public class PlayFragment extends BaseLazyFragment {
 
     void stopLoadWebView(boolean destroy) {
         if (mActivity == null || !isAdded()) return;
-        requireActivity().runOnUiThread(() -> {
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-            if (mSysWebView != null) {
-                mSysWebView.stopLoading();
-                mSysWebView.loadUrl("about:blank");
-                if (destroy) {
+                if (mXwalkWebView != null) {
+                    mXwalkWebView.stopLoading();
+                    mXwalkWebView.loadUrl("about:blank");
+                    if (destroy) {
+//                        mXwalkWebView.clearCache(true);
+                        mXwalkWebView.removeAllViews();
+                        mXwalkWebView.onDestroy();
+                        mXwalkWebView = null;
+                    }
+                }
+                if (mSysWebView != null) {
+                    mSysWebView.stopLoading();
+                    mSysWebView.loadUrl("about:blank");
+                    if (destroy) {
 //                        mSysWebView.clearCache(true);
-                    mSysWebView.removeAllViews();
-                    mSysWebView.destroy();
-                    mSysWebView = null;
+                        mSysWebView.removeAllViews();
+                        mSysWebView.destroy();
+                        mSysWebView = null;
+                    }
                 }
             }
         });
     }
 
     public String getFinalUrl(){
-        return TextUtils.isEmpty(mCurrentUrl) || !RegexUtils.isURL(mCurrentUrl) ?"":mCurrentUrl;
+        return TextUtils.isEmpty(mCurrentUrl)?"":mCurrentUrl;
     }
 
     boolean checkVideoFormat(String url) {
@@ -1655,6 +1707,24 @@ public class PlayFragment extends BaseLazyFragment {
 
     class MyWebView extends WebView {
         public MyWebView(@NonNull Context context) {
+            super(context);
+        }
+
+        @Override
+        public void setOverScrollMode(int mode) {
+            super.setOverScrollMode(mode);
+            if (mContext instanceof Activity)
+                AutoSize.autoConvertDensityOfCustomAdapt((Activity) mContext, PlayFragment.this);
+        }
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+            return false;
+        }
+    }
+
+    class MyXWalkView extends XWalkView {
+        public MyXWalkView(Context context) {
             super(context);
         }
 
@@ -1864,6 +1934,169 @@ public class PlayFragment extends BaseLazyFragment {
         @Override
         public void onLoadResource(WebView webView, String url) {
             super.onLoadResource(webView, url);
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void configWebViewX5(XWalkView webView) {
+        if (webView == null) {
+            return;
+        }
+        ViewGroup.LayoutParams layoutParams = Hawk.get(HawkConfig.DEBUG_OPEN, false)
+                ? new ViewGroup.LayoutParams(800, 400) :
+                new ViewGroup.LayoutParams(1, 1);
+        webView.setFocusable(false);
+        webView.setFocusableInTouchMode(false);
+        webView.clearFocus();
+        webView.setOverScrollMode(View.OVER_SCROLL_ALWAYS);
+        requireActivity().addContentView(webView, layoutParams);
+        /* 添加webView配置 */
+        final XWalkSettings settings = webView.getSettings();
+        settings.setAllowContentAccess(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setDatabaseEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setJavaScriptEnabled(true);
+
+        if (Hawk.get(HawkConfig.DEBUG_OPEN, false)) {
+            settings.setBlockNetworkImage(false);
+        } else {
+            settings.setBlockNetworkImage(true);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            settings.setMediaPlaybackRequiresUserGesture(false);
+        }
+        settings.setUseWideViewPort(true);
+        settings.setDomStorageEnabled(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
+        settings.setSupportMultipleWindows(false);
+        settings.setLoadWithOverviewMode(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setSupportZoom(false);
+//        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        // settings.setUserAgentString(ANDROID_UA);
+
+        webView.setBackgroundColor(Color.BLACK);
+        webView.setUIClient(new XWalkUIClient(webView) {
+            @Override
+            public boolean onConsoleMessage(XWalkView view, String message, int lineNumber, String sourceId, ConsoleMessageType messageType) {
+                return false;
+            }
+
+            @Override
+            public boolean onJsAlert(XWalkView view, String url, String message, XWalkJavascriptResult result) {
+                return true;
+            }
+
+            @Override
+            public boolean onJsConfirm(XWalkView view, String url, String message, XWalkJavascriptResult result) {
+                return true;
+            }
+
+            @Override
+            public boolean onJsPrompt(XWalkView view, String url, String message, String defaultValue, XWalkJavascriptResult result) {
+                return true;
+            }
+        });
+        XWalkWebClient mX5WebClient = new XWalkWebClient(webView);
+        webView.setResourceClient(mX5WebClient);
+    }
+
+    private class XWalkWebClient extends XWalkResourceClient {
+        public XWalkWebClient(XWalkView view) {
+            super(view);
+        }
+
+        @Override
+        public void onDocumentLoadedInFrame(XWalkView view, long frameId) {
+            super.onDocumentLoadedInFrame(view, frameId);
+        }
+
+        @Override
+        public void onLoadStarted(XWalkView view, String url) {
+            super.onLoadStarted(view, url);
+        }
+
+        @Override
+        public void onLoadFinished(XWalkView view, String url) {
+            super.onLoadFinished(view, url);
+        }
+
+        @Override
+        public void onProgressChanged(XWalkView view, int progressInPercent) {
+            super.onProgressChanged(view, progressInPercent);
+        }
+
+        @Override
+        public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+            String url = request.getUrl().toString();
+            LOG.i("shouldInterceptLoadRequest url:" + url);
+            // suppress favicon requests as we don't display them anywhere
+            if (url.endsWith("/favicon.ico")) {
+                if (url.startsWith("http://127.0.0.1")) {
+                    return createXWalkWebResourceResponse("image/x-icon", "UTF-8", null);
+                }
+                return null;
+            }
+
+            boolean isFilter = VideoParseRuler.isFilter(webUrl, url);
+            if (isFilter) {
+                LOG.i("shouldInterceptLoadRequest filter:" + url);
+                return null;
+            }
+
+            boolean ad;
+            if (!loadedUrls.containsKey(url)) {
+                ad = AdBlocker.isAd(url);
+                loadedUrls.put(url, ad);
+            } else {
+                ad = Boolean.TRUE.equals(loadedUrls.get(url));
+            }
+            if (!ad) {
+
+                if (checkVideoFormat(url)) {
+                    HashMap<String, String> webHeaders = new HashMap<>();
+                    Map<String, String> hds = request.getRequestHeaders();
+                    if (hds != null && hds.keySet().size() > 0) {
+                        for (String k : hds.keySet()) {
+                            if (k.equalsIgnoreCase("user-agent")
+                                    || k.equalsIgnoreCase("referer")
+                                    || k.equalsIgnoreCase("origin")) {
+                                webHeaders.put(k, " " + hds.get(k));
+                            }
+                        }
+                    }
+                    loadFoundVideoUrls.add(url);
+                    loadFoundVideoUrlsHeader.put(url, webHeaders);
+                    LOG.i("loadFoundVideoUrl:" + url);
+                    if (loadFoundCount.incrementAndGet() == 1) {
+                        mHandler.removeMessages(100);
+                        url = loadFoundVideoUrls.poll();
+                        String cookie = CookieManager.getInstance().getCookie(url);
+                        if (!TextUtils.isEmpty(cookie))
+                            webHeaders.put("Cookie", " " + cookie);//携带cookie
+                        playUrl(url, webHeaders);
+                        stopLoadWebView(false);
+                    }
+                }
+            }
+            return ad || loadFoundCount.get() > 0 ?
+                    createXWalkWebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream("".getBytes())) :
+                    null;
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(XWalkView view, String s) {
+            return false;
+        }
+
+        @Override
+        public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
+            callback.onReceiveValue(true);
         }
     }
 

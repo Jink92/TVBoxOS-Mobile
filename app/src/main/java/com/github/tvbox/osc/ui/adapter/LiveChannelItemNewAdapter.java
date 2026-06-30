@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.ui.adapter;
 
+import android.graphics.Color;
 import android.view.View;
 import android.widget.TextView;
 
@@ -38,8 +39,8 @@ public class LiveChannelItemNewAdapter extends BaseQuickAdapter<LiveChannelItem,
             tvChannel.setTextColor(mContext.getResources().getColor(R.color.white));
             root.setBackground(mContext.getResources().getDrawable(R.drawable.bg_r_common_solid_primary));
         } else{
-            tvChannelNum.setTextColor(ColorUtils.getColor(R.color.text_foreground));
-            tvChannel.setTextColor(ColorUtils.getColor(R.color.text_foreground));
+            tvChannelNum.setTextColor(ColorUtils.getColor(R.color.text_gray));
+            tvChannel.setTextColor(ColorUtils.getColor(R.color.text_gray));
             root.setBackground(mContext.getResources().getDrawable(R.drawable.bg_transparent));
         }
     }

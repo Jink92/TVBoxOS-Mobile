@@ -12,6 +12,7 @@ import com.github.tvbox.osc.databinding.DialogPlayingControlBinding;
 import com.github.tvbox.osc.player.MyVideoView;
 import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
+import com.lxj.xpopup.core.BottomPopupView;
 import com.lxj.xpopup.core.DrawerPopupView;
 
 import org.jetbrains.annotations.NotNull;
@@ -71,16 +72,6 @@ public class PlayingControlRightDialog extends DrawerPopupView {
         mBinding.scale.setOnClickListener(view -> changeAndUpdateText(mBinding.scale,mController.mPlayerScaleBtn));
         mBinding.playTimeStart.setOnClickListener(view -> changeAndUpdateText(mBinding.playTimeStart,mController.mPlayerTimeStartBtn));
         mBinding.playTimeEnd.setOnClickListener(view -> changeAndUpdateText(mBinding.playTimeEnd,mController.mPlayerTimeSkipBtn));
-        mBinding.playTimeStart.setOnLongClickListener(view -> {
-            mController.mPlayerTimeStartBtn.performLongClick();
-            mBinding.playTimeStart.setText(mController.mPlayerTimeStartBtn.getText());
-            return true;
-        });
-        mBinding.playTimeEnd.setOnLongClickListener(view -> {
-            mController.mPlayerTimeSkipBtn.performLongClick();
-            mBinding.playTimeEnd.setText(mController.mPlayerTimeSkipBtn.getText());
-            return true;
-        });
         mBinding.increaseStart.setOnClickListener(view -> {
             mController.increaseTime("st");
             updateSkipText(true);
@@ -108,6 +99,10 @@ public class PlayingControlRightDialog extends DrawerPopupView {
         mBinding.subtitle.setOnClickListener(view -> dismissWith(() -> changeAndUpdateText(null,mController.mZimuBtn)));
         mBinding.voice.setOnClickListener(view -> dismissWith(() -> changeAndUpdateText(null,mController.mAudioTrackBtn)));
         mBinding.download.setOnClickListener(view -> dismissWith(mDetailActivity::use1DMDownload));
+        mBinding.subtitle.setOnLongClickListener(view -> {
+            mController.hideSubtitle();
+            return true;
+        });
     }
 
     private void updateSkipText(boolean start){
@@ -146,7 +141,7 @@ public class PlayingControlRightDialog extends DrawerPopupView {
                 tv.setTextColor(ColorUtils.getColor(R.color.white));
             }else {
                 tv.setBackground(getResources().getDrawable(R.drawable.bg_r_common_stroke_primary));
-                tv.setTextColor(ColorUtils.getColor(R.color.text_foreground));
+                tv.setTextColor(ColorUtils.getColor(R.color.text_gray));
             }
         }
     }
@@ -156,6 +151,7 @@ public class PlayingControlRightDialog extends DrawerPopupView {
      */
     public void updateAboutIjkVisible(){
         mBinding.decode.setVisibility(mController.mPlayerIJKBtn.getVisibility());
+        mBinding.voice.setVisibility(mController.mAudioTrackBtn.getVisibility());
     }
 
     /**

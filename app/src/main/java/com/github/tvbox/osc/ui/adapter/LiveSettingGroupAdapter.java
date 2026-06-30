@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.ui.adapter;
 
+import android.graphics.Color;
 import android.widget.TextView;
 
 import com.blankj.utilcode.util.ColorUtils;
@@ -32,7 +33,7 @@ public class LiveSettingGroupAdapter extends BaseQuickAdapter<LiveSettingGroup, 
         if (groupIndex == selectedGroupIndex && groupIndex != focusedGroupIndex) {
             tvGroupName.setTextColor(mContext.getResources().getColor(R.color.color_1890FF));
         } else {
-            tvGroupName.setTextColor(ColorUtils.getColor(R.color.text_foreground));
+            tvGroupName.setTextColor(ColorUtils.getColor(R.color.text_gray));
         }
     }
 

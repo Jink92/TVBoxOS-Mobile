@@ -39,16 +39,12 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           echo "local.properties created with sdk.dir=$ANDROID_HOME"
 
-      - name: Generate Keystore
+      - name: Setup Keystore
         run: |
-          keytool -genkey -v -keystore release.keystore \
-            -alias release -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass android -keypass android \
-            -dname "CN=TVBox, OU=TVBox, O=TVBox, L=Beijing, ST=Beijing, C=86"
-          echo "KEYSTORE_PATH=${{ github.workspace }}/release.keystore" >> $GITHUB_ENV
-          echo "KEYSTORE_PASS=android" >> $GITHUB_ENV
-          echo "KEY_ALIAS=release" >> $GITHUB_ENV
-          echo "KEY_PASS=android" >> $GITHUB_ENV
+          echo "KEYSTORE_PATH=${{ github.workspace }}/app/test.jks" >> $GITHUB_ENV
+          echo "KEYSTORE_PASS=123456" >> $GITHUB_ENV
+          echo "KEY_ALIAS=key0" >> $GITHUB_ENV
+          echo "KEY_PASS=123456" >> $GITHUB_ENV
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -69,19 +65,11 @@ jobs:
 
       - name: List Output Files
         run: |
-          ls -la app/build/outputs/apk/ 2>/dev/null || echo "APK directory not found"
           find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
-
-      - name: Prepare Artifacts
-        run: |
-          rm -rf apk/
-          mkdir -p apk/
-          find app/build/outputs/apk -name "MBox_*.apk" -exec cp {} apk/ \; 2>/dev/null || echo "No APK files to copy"
-          ls -la apk/
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TVBoxOS-APK
+          name: TVBoxOS-Mobile-APK
           path: |
-            apk/*.apk
+            app/build/outputs/apk/**/*.apk

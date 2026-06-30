@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -19,11 +18,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
+import com.blankj.utilcode.util.LogUtils;
+import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.IJKCode;
 import com.github.tvbox.osc.bean.ParseBean;
+import com.github.tvbox.osc.constant.CacheConst;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView;
 import com.github.tvbox.osc.ui.adapter.ParseAdapter;
@@ -73,21 +76,21 @@ public class VodController extends BaseController {
                         break;
                     }
                     case 1002: { // 显示底部菜单
-                        toggleViewShowWithAlpha(mBottomRoot, true);
-                        toggleViewShowWithAlpha(mTopRoot1, true);
-                        toggleViewShowWithAlpha(mTopRoot2, true);
+                        mBottomRoot.setVisibility(VISIBLE);
+                        mTopRoot1.setVisibility(VISIBLE);
+                        mTopRoot2.setVisibility(VISIBLE);
                         if (!isLock){// 未上锁,随底部显示
-                            toggleViewShowWithAlpha(mLockView, true);
+                            mLockView.setVisibility(VISIBLE);
                         }
                         mNextBtn.requestFocus();
                         break;
                     }
                     case 1003: { // 隐藏底部菜单
-                        toggleViewShowWithAlpha(mBottomRoot, false);
-                        toggleViewShowWithAlpha(mTopRoot1, false);
-                        toggleViewShowWithAlpha(mTopRoot2, false);
-                        if (!isLock){// 未上锁,随底部显示
-                            toggleViewShowWithAlpha(mLockView, false);
+                        mBottomRoot.setVisibility(GONE);
+                        mTopRoot1.setVisibility(GONE);
+                        mTopRoot2.setVisibility(GONE);
+                        if (!isLock){// 未上锁,随底部隐藏
+                            mLockView.setVisibility(GONE);
                         }
                         if (listener != null) {
                             listener.onHideBottom();
@@ -159,7 +162,6 @@ public class VodController extends BaseController {
     int videoPlayState = 0;
     LockRunnable lockRunnable = new LockRunnable();
     private boolean isLock = false;
-    private ParseAdapter mParseAdapter;
 
     private Runnable myRunnable2 = new Runnable() {
         @Override
@@ -275,21 +277,21 @@ public class VodController extends BaseController {
         });
 
         mGridView.setLayoutManager(new V7LinearLayoutManager(getContext(), 0, false));
-        mParseAdapter = new ParseAdapter();
-        mParseAdapter.setOnItemClickListener((adapter, view, position) -> {
-            ParseBean parseBean = mParseAdapter.getItem(position);
+        ParseAdapter parseAdapter = new ParseAdapter();
+        parseAdapter.setOnItemClickListener((adapter, view, position) -> {
+            ParseBean parseBean = parseAdapter.getItem(position);
             // 当前默认解析需要刷新
-            int currentDefault = mParseAdapter.getData().indexOf(ApiConfig.get().getDefaultParse());
-            mParseAdapter.notifyItemChanged(currentDefault);
+            int currentDefault = parseAdapter.getData().indexOf(ApiConfig.get().getDefaultParse());
+            parseAdapter.notifyItemChanged(currentDefault);
             ApiConfig.get().setDefaultParse(parseBean);
-            mParseAdapter.notifyItemChanged(position);
+            parseAdapter.notifyItemChanged(position);
             listener.changeParse(parseBean);
             hideBottom();
         });
-        mGridView.setAdapter(mParseAdapter);
-        mParseAdapter.setNewData(ApiConfig.get().getParseBeanList());
+        mGridView.setAdapter(parseAdapter);
+        parseAdapter.setNewData(ApiConfig.get().getParseBeanList());
 
-        //mParseRoot.setVisibility(VISIBLE);
+        mParseRoot.setVisibility(VISIBLE);
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -581,6 +583,10 @@ public class VodController extends BaseController {
             listener.selectSubtitle();
             hideBottom();
         });
+        mZimuBtn.setOnLongClickListener(view -> {
+            hideSubtitle();
+            return true;
+        });
         mAudioTrackBtn.setOnClickListener(view -> {
             FastClickCheckUtil.check(view);
             listener.selectAudioTrack();
@@ -690,10 +696,7 @@ public class VodController extends BaseController {
     }
 
     public void showParse(boolean userJxList) {
-        //mParseRoot.setVisibility(userJxList ? VISIBLE : GONE);
-        if (listener!=null && mParseAdapter!=null){
-            listener.showParseRoot(userJxList,mParseAdapter);
-        }
+        mParseRoot.setVisibility(userJxList ? VISIBLE : GONE);
     }
 
     private JSONObject mPlayerConfig = null;
@@ -714,6 +717,7 @@ public class VodController extends BaseController {
             mPlayerSpeedBtn.setText("x" + mPlayerConfig.getDouble("sp"));
             mPlayerTimeStartBtn.setText(PlayerUtils.stringForTime(mPlayerConfig.getInt("st") * 1000));
             mPlayerTimeSkipBtn.setText(PlayerUtils.stringForTime(mPlayerConfig.getInt("et") * 1000));
+            mAudioTrackBtn.setVisibility((playerType == 1) ? VISIBLE : GONE);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -784,8 +788,6 @@ public class VodController extends BaseController {
         void showSetting();
 
         void pip();
-
-        void showParseRoot(boolean show,ParseAdapter adapter);
     }
 
     public void setListener(VodControlListener listener) {
@@ -984,7 +986,7 @@ public class VodController extends BaseController {
             fromLongPress = true;
             try {
                 speed_old = (float) mPlayerConfig.getDouble("sp");
-                float speed = Hawk.get(HawkConfig.VIDEO_SPEED, 2.0f);
+                float speed = SPUtils.getInstance().getFloat(CacheConst.VIDEO_SPEED, 2.0f);
                 mPlayerConfig.put("sp", speed);
                 updatePlayerCfgView();
                 listener.updatePlayerCfg();
@@ -1049,16 +1051,15 @@ public class VodController extends BaseController {
         mHandler.removeCallbacks(myRunnable2);
     }
 
-    public void openSubtitle(boolean open) {
-        if (open) {
-            mSubtitleView.setVisibility(VISIBLE);
-            Toast.makeText(getContext(), "字幕已开启", Toast.LENGTH_SHORT).show();
-        } else {
-            mSubtitleView.setVisibility(View.GONE);
-            Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();
-        }
+    public void hideSubtitle() {
+        mSubtitleView.setVisibility(View.GONE);
+        mSubtitleView.destroy();
+        mSubtitleView.clearSubtitleCache();
+        mSubtitleView.isInternal = false;
         hideBottom();
+        Toast.makeText(getContext(), "字幕已关闭", Toast.LENGTH_SHORT).show();
     }
+
 
     public void increaseTime(String type) {
         try {
@@ -1087,24 +1088,6 @@ public class VodController extends BaseController {
             listener.updatePlayerCfg();
         } catch (JSONException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void toggleViewShowWithAlpha(View view, boolean show) {
-        if (show) {
-            view.setVisibility(View.VISIBLE);
-            view.animate()
-                    .alpha(1.0f)
-                    .setDuration(100)
-                    .setInterpolator(new AccelerateInterpolator())
-                    .start();
-        } else {
-            view.animate()
-                    .alpha(0.0f)
-                    .setDuration(100)
-                    .setInterpolator(new AccelerateInterpolator())
-                    .withEndAction(() -> view.setVisibility(View.GONE))
-                    .start();
         }
     }
 }

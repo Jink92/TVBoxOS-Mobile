@@ -6,7 +6,12 @@ import android.content.Intent
 import com.github.tvbox.osc.event.RefreshEvent
 import org.greenrobot.eventbus.EventBus
 
-
+/**
+ * @Author : Liu XiaoRan
+ * @Email : 592923276@qq.com
+ * @Date : on 2023/1/29 11:45.
+ * @Description :
+ */
 class BatteryReceiver : BroadcastReceiver() {
 
     var currentBattery: Int = -1

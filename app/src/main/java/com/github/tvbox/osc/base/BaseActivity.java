@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.PermissionChecker;
 
 import com.blankj.utilcode.util.ActivityUtils;
-import com.blankj.utilcode.util.AppUtils;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.callback.EmptyCallback;
 import com.github.tvbox.osc.callback.LoadingCallback;
@@ -23,7 +22,6 @@ import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.util.AppManager;
 import com.github.tvbox.osc.util.HawkConfig;
-import com.github.tvbox.osc.util.Utils;
 import com.gyf.immersionbar.ImmersionBar;
 import com.hjq.bar.OnTitleBarListener;
 import com.hjq.bar.TitleBar;
@@ -44,6 +42,11 @@ import java.io.InputStreamReader;
 
 import me.jessyan.autosize.internal.CustomAdapt;
 
+/**
+ * @author pj567
+ * @date :2020/12/17
+ * @description:
+ */
 public abstract class BaseActivity extends AppCompatActivity implements CustomAdapt, OnTitleBarListener {
     protected Context mContext;
     private LoadService mLoadService;
@@ -67,9 +70,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         initStatusBar();
         initTitleBar();
         init();
-        if (!App.getInstance().isNormalStart){
-            AppUtils.relaunchApp(true);
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -80,7 +80,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
     private void initStatusBar(){
         ImmersionBar.with(this)
-                .statusBarDarkFont(!Utils.isDarkTheme())
+                .statusBarDarkFont(true)
                 .titleBar(findTitleBar(getWindow().getDecorView().findViewById(android.R.id.content)))
                 .navigationBarColor(R.color.white)
                 .init();

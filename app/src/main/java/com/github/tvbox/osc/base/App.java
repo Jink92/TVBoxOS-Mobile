@@ -32,13 +32,16 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
 
+/**
+ * @author pj567
+ * @date :2020/12/17
+ * @description:
+ */
 public class App extends MultiDexApplication {
     private static App instance;
 
     private static P2PClass p;
     public static String burl;
-
-    public boolean isNormalStart;
 
     @Override
     public void onCreate() {
@@ -68,8 +71,6 @@ public class App extends MultiDexApplication {
         FileUtils.cleanPlayerCache();
         initCrashConfig();
         Utils.initTheme();
-        // 加载订阅源
-        loadSubscriptions();
     }
 
     private void initParams() {
@@ -81,6 +82,7 @@ public class App extends MultiDexApplication {
         putDefault(HawkConfig.PLAY_TYPE, 2);                 //播放器: 0=系统, 1=IJK, 2=Exo
         putDefault(HawkConfig.IJK_CODEC, "硬解码");           //IJK解码: 软解码, 硬解码
         putDefault(HawkConfig.BACKGROUND_PLAY_TYPE,2);           //后台播放: 0 关闭,1 开启,2 画中画
+        putDefault(HawkConfig.PARSE_WEBVIEW, true);          //嗅探Webview: true=系统自带, false=XWalkView
         putDefault(HawkConfig.DOH_URL, 0);                   //安全DNS: 0=关闭, 1=腾讯, 2=阿里, 3=360, 4=Google, 5=AdGuard, 6=Quad9
         putDefault(HawkConfig.PLAY_SCALE, 0);                //画面缩放: 0=默认, 1=16:9, 2=4:3, 3=填充, 4=原始, 5=裁剪
         putDefault(HawkConfig.HISTORY_NUM, 2);                //历史记录数量: 0=30, 1=50, 2=70
@@ -99,7 +101,7 @@ public class App extends MultiDexApplication {
                     subscriptions.add(new Subscription("订阅: "+(i+1), apis[i]));
                 }
             }
-            Hawk.put(HawkConfig.SUBSCRIPTIONS, subscriptions);
+            Hawk.put(HawkConfig.SUBSCRIPTIONS,subscriptions);
         }
     }
 
@@ -119,11 +121,6 @@ public class App extends MultiDexApplication {
         }
     }
 
-    private void loadSubscriptions() {
-        // 加载订阅源的实现
-        // 例如，从本地文件或远程服务器加载订阅源
-        // 并将其存储到Hawk中
-    }
 
     private VodInfo vodInfo;
     public void setVodInfo(VodInfo vodinfo){
@@ -158,4 +155,5 @@ public class App extends MultiDexApplication {
                 .restartActivity(MainActivity.class) //重新启动后的activity
                 .apply();
     }
+
 }

@@ -23,7 +23,12 @@ import com.squareup.picasso.Picasso;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
-
+/**
+ * @Author : Liu XiaoRan
+ * @Email : 592923276@qq.com
+ * @Date : on 2023/8/17 09:28.
+ * @Description :
+ */
 public class VideoDetailDialog extends BottomPopupView {
 
 

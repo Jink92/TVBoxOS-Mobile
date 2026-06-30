@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingVertical="20dp">
+            android:paddingVertical="16dp">
 
             <LinearLayout
                 android:id="@+id/llSubscription"
@@ -44,7 +44,6 @@
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
                 android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground"
                 >
 
                 <ImageView
@@ -63,7 +62,7 @@
                     android:gravity="center"
                     android:text="订阅管理"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -77,7 +76,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -88,8 +87,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground">
+                android:paddingHorizontal="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -107,7 +105,7 @@
                     android:gravity="center"
                     android:text="观看历史"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -121,7 +119,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -131,8 +129,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground">
+                android:paddingHorizontal="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -150,7 +147,7 @@
                     android:gravity="center"
                     android:text="收藏"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -164,7 +161,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -174,8 +171,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground">
+                android:paddingHorizontal="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -193,7 +189,7 @@
                     android:gravity="center"
                     android:text="直播"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -207,7 +203,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -217,8 +213,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground">
+                android:paddingHorizontal="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -236,7 +231,7 @@
                     android:gravity="center"
                     android:text="本地视频"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -250,7 +245,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -261,7 +256,6 @@
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
                 android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground"
                 >
 
                 <ImageView
@@ -280,7 +274,7 @@
                     android:gravity="center"
                     android:text="播放链接"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -294,7 +288,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -304,8 +298,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground">
+                android:paddingHorizontal="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -323,7 +316,7 @@
                     android:gravity="center"
                     android:text="关于"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -337,7 +330,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
@@ -347,8 +340,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp"
-                android:paddingHorizontal="24dp"
-                android:foreground="?android:selectableItemBackground">
+                android:paddingHorizontal="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -366,7 +358,7 @@
                     android:gravity="center"
                     android:text="设置"
                     android:textAlignment="gravity"
-                    android:textColor="@color/text_foreground"
+                    android:textColor="@color/text_gray"
                     android:textSize="16sp" />
 
                 <Space
@@ -380,7 +372,7 @@
                     android:layout_gravity="center"
                     android:alpha="0.75"
                     android:src="@drawable/icon_pre"
-                    app:tint="@color/text_foreground" />
+                    app:tint="@color/text_gray" />
 
             </LinearLayout>
 
