@@ -55,7 +55,7 @@ jobs:
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace 2>&1 | tail -100
+          ./gradlew assembleDebug --stacktrace 2>&1
 
       - name: Build Release APK
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
