@@ -882,7 +882,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 
             playFragment.getPlayer().postDelayed(() -> {
                 if (!playFragment.getPlayer().isPlaying()){
-                    playFragment.getController().togglePlay();
+                    togglePlayController();
                 }
             },400);
         }
@@ -918,7 +918,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     if (currentStatus == Constants.BROADCAST_ACTION_PREV) {
                         playFragment.playPrevious();
                     } else if (currentStatus == Constants.BROADCAST_ACTION_PLAYPAUSE) {
-                        playFragment.getController().togglePlay();
+                        togglePlayController();
                     } else if (currentStatus == Constants.BROADCAST_ACTION_NEXT) {
                         playFragment.playNext(false);
                     } else if (currentStatus == Constants.BROADCAST_ACTION_CLOSE) {
@@ -935,7 +935,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 mRemoteActionReceiver = null;
             }
             if (playFragment.getPlayer().isPlaying()){// 退出画中画时,暂停播放(画中画的全屏也会触发,但全屏后会自动播放)
-                playFragment.getController().togglePlay();
+                togglePlayController();
             }
         }
     }
@@ -981,6 +981,16 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             }
             chooseFlag(currentIndex);
             mBinding.mGridView.postDelayed(() -> chooseSeries(vodInfo.playIndex,true),300);
+        }
+    }
+
+    private void togglePlayController() {
+        try {
+            java.lang.reflect.Method method = xyz.doikki.videoplayer.controller.BaseVideoController.class.getDeclaredMethod("togglePlay");
+            method.setAccessible(true);
+            method.invoke(playFragment.getController());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
