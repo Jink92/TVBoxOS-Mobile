@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.github.tvbox.osc.R;
+ import com.blankj.utilcode.util.ToastUtils;
 
 import xyz.doikki.videoplayer.controller.ControlWrapper;
 import xyz.doikki.videoplayer.controller.IControlComponent;
@@ -65,6 +66,9 @@ public class PlayerMenuView extends FrameLayout implements IControlComponent {
             if (mOnPlayerMenuClickListener!=null){
                 mOnPlayerMenuClickListener.expand();
             }
+        });
+        findViewById(R.id.cast).setOnClickListener(view -> {
+            ToastUtils.showShort("投屏功能暂不支持");
         });
     }
 

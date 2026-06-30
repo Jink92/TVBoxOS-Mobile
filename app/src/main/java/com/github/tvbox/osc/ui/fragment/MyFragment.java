@@ -57,7 +57,6 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
                     }, null, R.layout.dialog_input).show();
         });
         //mBinding.tvLive.setOnClickListener(v -> jumpActivity(LivePlayActivity.class));
-        mBinding.tvLive.setOnClickListener(v -> jumpActivity(LiveActivity.class));
 
         mBinding.tvSetting.setOnClickListener(v -> jumpActivity(SettingActivity.class));
 
