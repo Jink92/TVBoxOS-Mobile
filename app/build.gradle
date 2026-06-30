@@ -3,6 +3,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     compileSdkVersion 33
+    namespace 'com.github.tvbox.osc'
 
     defaultConfig {
         applicationId 'com.github.tvbox.osc'
@@ -31,7 +32,7 @@ android {
 
         // Apk 输出配置
         variant.outputs.all { output ->
-            outputFileName = 'MBox_v' + variant.versionName + '_' + variant.buildType.name
+            outputFileName = 'TVBox_v' + variant.versionName + '_' + variant.buildType.name
             if (variant.buildType.name == buildTypes.release.getName()) {
                 outputFileName += '_' + new Date().format("yyyyMMdd")
             }
