@@ -41,13 +41,13 @@ jobs:
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaDebug 2>&1 | tail -300
+          ./gradlew assembleJavaDebug
 
       - name: Build Release APK (Java flavor)
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaRelease 2>&1 | tail -300
+          ./gradlew assembleJavaRelease
 
       - name: List Output Files
         run: |
