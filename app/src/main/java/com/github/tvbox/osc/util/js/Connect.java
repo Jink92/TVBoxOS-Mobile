@@ -2,9 +2,8 @@ package com.github.tvbox.osc.util.js;
 
 import android.util.Base64;
 
+import com.github.catvod.net.OkHttp;
 import com.github.tvbox.osc.util.LOG;
-import com.github.tvbox.osc.util.OkGoHelper;
-import com.github.tvbox.osc.util.urlhttp.OkHttpUtil;
 import com.google.common.net.HttpHeaders;
 import com.lzy.okgo.OkGo;
 import com.whl.quickjs.wrapper.JSArray;
@@ -15,6 +14,7 @@ import com.whl.quickjs.wrapper.QuickJSContext;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.FormBody;
@@ -28,11 +28,11 @@ import okhttp3.Response;
 
 public class Connect {
     static OkHttpClient client;
-    
+
     public static Call to(String url, Req req) {
-        client = OkGoHelper.getDefaultClient();
+        OkHttpClient client = OkHttp.client(req.isRedirect(), req.getTimeout());
         return client.newCall(getRequest(url, req, Headers.of(req.getHeader())));
-    }    
+    }
 
     public static JSObject success(QuickJSContext ctx, Req req, Response res) {
         try {
@@ -46,7 +46,7 @@ public class Connect {
                 for (byte aByte : res.body().bytes()) array.push((int) aByte);
                 jsObject.set("content", array);
             }
-            if (req.getBuffer() == 2) jsObject.set("content", Base64.encodeToString(res.body().bytes(), Base64.DEFAULT | Base64.NO_WRAP));
+            if (req.getBuffer() == 2) jsObject.set("content", Base64.encodeToString(res.body().bytes(), Base64.DEFAULT));
             return jsObject;
         } catch (Exception e) {
             return error(ctx);
@@ -119,8 +119,8 @@ public class Connect {
                 }
             }
             OkGo.getInstance().cancelTag(tag);
-            OkHttpUtil.cancel(tag);
         } catch (Exception e) {
+            LOG.e(e);
         }
     }
 }

@@ -20,13 +20,11 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.github.tvbox.osc.util.UA;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.squareup.picasso.Downloader;
 
 import java.io.IOException;
-import java.net.URL;
 import java.net.URLDecoder;
 
 import okhttp3.Cache;

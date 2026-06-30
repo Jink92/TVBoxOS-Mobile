@@ -14,7 +14,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -28,19 +27,8 @@ public class DefaultConfig {
 
     public static List<MovieSort.SortData> adjustSort(String sourceKey, List<MovieSort.SortData> list, boolean withMy) {
         List<MovieSort.SortData> data = new ArrayList<>();
-        if (sourceKey != null && list != null) {
+        if (sourceKey != null) {
             SourceBean sb = ApiConfig.get().getSource(sourceKey);
-            if (sb == null || sb.getCategories() == null) {
-                for (MovieSort.SortData sortData : list) {
-                    if (sortData.filters == null)
-                        sortData.filters = new ArrayList<>();
-                    data.add(sortData);
-                }
-                if (withMy)
-                    data.add(0, new MovieSort.SortData("my0", "主页"));
-                Collections.sort(data);
-                return data;
-            }
             ArrayList<String> categories = sb.getCategories();
             if (!categories.isEmpty()) {
                 for (String cate : categories) {
@@ -147,9 +135,8 @@ public class DefaultConfig {
 
     public static String safeJsonString(JsonObject obj, String key, String defaultVal) {
         try {
-            if (obj.has(key)){
-                return obj.get(key).isJsonObject() || obj.get(key).isJsonArray()?obj.get(key).toString().trim():obj.getAsJsonPrimitive(key).getAsString().trim();
-            }
+            if (obj.has(key))
+                return obj.getAsJsonPrimitive(key).getAsString().trim();
             else
                 return defaultVal;
         } catch (Throwable th) {
@@ -186,22 +173,10 @@ public class DefaultConfig {
     }
 
     public static String checkReplaceProxy(String urlOri) {
-        if (urlOri.startsWith("proxy://"))
+        if (!TextUtils.isEmpty(urlOri) && urlOri.startsWith("proxy://")) {
             return urlOri.replace("proxy://", ControlManager.get().getAddress(true) + "proxy?");
-        return urlOri;
-    }
-
-    private static final List<String> NO_AD_KEYWORDS = Arrays.asList(
-            "tx", "youku", "qq","qiyi", "letv", "leshi","sohu", "mgtv", "bilibili", "imgo","优酷", "芒果", "腾讯", "奇艺"
-    );
-
-    public static boolean noAd(String flag) {
-        if (flag == null || flag.isEmpty()) return false;
-        for (String keyword : NO_AD_KEYWORDS) {
-            if (flag.equals(keyword) || flag.contains(keyword)) {
-                return true;
-            }
+        }else {
+            return urlOri;
         }
-        return false;
     }
 }

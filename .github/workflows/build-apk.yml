@@ -55,17 +55,17 @@ jobs:
         with:
           gradle-version: 7.5
 
-      - name: Build Debug APK (Java flavor)
+      - name: Build Debug APK
         if: ${{ inputs.buildType == 'debug' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaDebug
+          ./gradlew assembleDebug
 
-      - name: Build Release APK (Java flavor)
+      - name: Build Release APK
         if: ${{ inputs.buildType == 'release' || inputs.buildType == 'both' || !inputs.buildType }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleJavaRelease
+          ./gradlew assembleRelease
 
       - name: List Output Files
         run: |
@@ -76,7 +76,7 @@ jobs:
         run: |
           rm -rf apk/
           mkdir -p apk/
-          find app/build/outputs/apk -name "*java*.apk" -exec cp {} apk/ \; 2>/dev/null || echo "No APK files to copy"
+          find app/build/outputs/apk -name "MBox_*.apk" -exec cp {} apk/ \; 2>/dev/null || echo "No APK files to copy"
           ls -la apk/
 
       - name: Upload APK Artifacts

@@ -5,7 +5,7 @@ import android.content.Context;
 
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.IJKCode;
-import com.github.tvbox.osc.player.ExoMediaPlayerFactory;
+import com.github.tvbox.osc.player.EXOmPlayer;
 import com.github.tvbox.osc.player.IjkMediaPlayer;
 import com.github.tvbox.osc.player.render.SurfaceRenderViewFactory;
 import com.github.tvbox.osc.player.thirdparty.Kodi;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import tv.danmaku.ijk.media.player.IjkLibLoader;
+import xyz.doikki.videoplayer.exo.ExoMediaPlayerFactory;
 import xyz.doikki.videoplayer.player.AndroidMediaPlayerFactory;
 import xyz.doikki.videoplayer.player.PlayerFactory;
 import xyz.doikki.videoplayer.player.VideoView;
@@ -31,12 +32,9 @@ import xyz.doikki.videoplayer.render.TextureRenderViewFactory;
 
 public class PlayerHelper {
     public static void updateCfg(VideoView videoView, JSONObject playerCfg) {
-        updateCfg(videoView,playerCfg,-1);
-    }
-    public static void updateCfg(VideoView videoView, JSONObject playerCfg,int forcePlayerType) {
         int playerType = Hawk.get(HawkConfig.PLAY_TYPE, 0);
         int renderType = Hawk.get(HawkConfig.PLAY_RENDER, 0);
-        String ijkCode = Hawk.get(HawkConfig.IJK_CODEC, "硬解码");
+        String ijkCode = Hawk.get(HawkConfig.IJK_CODEC, "软解码");
         int scale = Hawk.get(HawkConfig.PLAY_SCALE, 0);
         try {
             playerType = playerCfg.getInt("pl");
@@ -46,7 +44,6 @@ public class PlayerHelper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        if(forcePlayerType>=0)playerType = forcePlayerType;
         IJKCode codec = ApiConfig.get().getIJKCodec(ijkCode);
         PlayerFactory playerFactory;
         if (playerType == 1) {
@@ -71,7 +68,12 @@ public class PlayerHelper {
                 th.printStackTrace();
             }
         } else if (playerType == 2) {
-            playerFactory = ExoMediaPlayerFactory.create();
+            playerFactory = new PlayerFactory<EXOmPlayer>() {
+                @Override
+                public EXOmPlayer createPlayer(Context context) {
+                    return new EXOmPlayer(context);
+                }
+            };
         } else {
             playerFactory = AndroidMediaPlayerFactory.create();
         }
@@ -85,11 +87,9 @@ public class PlayerHelper {
                 renderViewFactory = SurfaceRenderViewFactory.create();
                 break;
         }
-        if(videoView!=null){
-            videoView.setPlayerFactory(playerFactory);
-            videoView.setRenderViewFactory(renderViewFactory);
-            videoView.setScreenScaleType(scale);
-        }
+        videoView.setPlayerFactory(playerFactory);
+        videoView.setRenderViewFactory(renderViewFactory);
+        videoView.setScreenScaleType(scale);
     }
 
     public static void updateCfg(VideoView videoView) {
@@ -117,7 +117,12 @@ public class PlayerHelper {
                 th.printStackTrace();
             }
         } else if (playType == 2) {
-            playerFactory = ExoMediaPlayerFactory.create();
+            playerFactory = new PlayerFactory<EXOmPlayer>() {
+                @Override
+                public EXOmPlayer createPlayer(Context context) {
+                    return new EXOmPlayer(context);
+                }
+            };
         } else {
             playerFactory = AndroidMediaPlayerFactory.create();
         }
@@ -169,7 +174,7 @@ public class PlayerHelper {
             HashMap<Integer, String> playersInfo = new HashMap<>();
             playersInfo.put(0, "系统播放器");
             playersInfo.put(1, "IJK播放器");
-            playersInfo.put(2, "EXO播放器");
+            playersInfo.put(2, "Exo播放器");
             playersInfo.put(10, "MX播放器");
             playersInfo.put(11, "Reex播放器");
             playersInfo.put(12, "Kodi播放器");
@@ -184,7 +189,7 @@ public class PlayerHelper {
     public static HashMap<Integer, Boolean> getPlayersExistInfo() {
         if (mPlayersExistInfo == null) {
             HashMap<Integer, Boolean> playersExist = new HashMap<>();
-            playersExist.put(0, true);
+            playersExist.put(0, false);
             playersExist.put(1, true);
             playersExist.put(2, true);
             playersExist.put(10, MXPlayer.getPackageInfo() != null);
@@ -281,24 +286,12 @@ public class PlayerHelper {
         return scaleText;
     }
 
-    public static String getDisplaySpeed(long speed,boolean show) {
+    public static String getDisplaySpeed(long speed) {
         if(speed > 1048576)
             return new DecimalFormat("#.00").format(speed / 1048576d) + "Mb/s";
         else if(speed > 1024)
             return (speed / 1024) + "Kb/s";
         else
-            return speed > 0?speed + "B/s":(show?"0B/s":"");
-    }
-    public static String getDisplaySpeedBps(long speed, boolean show) {
-        long bitSpeed = speed * 8; // 字节转比特
-        if (bitSpeed >= 1_000_000_000) {
-            return new DecimalFormat("0.00").format(bitSpeed / 1_000_000_000d) + "Gbps";
-        } else if (bitSpeed >= 1_000_000) {
-            return new DecimalFormat("0.0").format(bitSpeed / 1_000_000d) + "Mbps";
-        } else if (bitSpeed >= 1_000) {
-            return new DecimalFormat("0.0").format(bitSpeed / 1_000d) + "Kbps";
-        } else {
-            return bitSpeed > 0 ? bitSpeed + "bps" : (show ? "0bps" : "");
-        }
+            return speed > 0?speed + "B/s":"";
     }
 }

@@ -98,8 +98,8 @@ public class RoomDataManger {
                         info = getVodInfoGson().fromJson(record.dataJson, new TypeToken<VodInfo>() {
                         }.getType());
                         info.sourceKey = record.sourceKey;
-//                        SourceBean sourceBean = ApiConfig.get().getSource(info.sourceKey);
-                        if (info.name == null)
+                        SourceBean sourceBean = ApiConfig.get().getSource(info.sourceKey);
+                        if (sourceBean == null || info.name == null)
                             info = null;
                     }
                 } catch (Exception e) {
@@ -136,14 +136,6 @@ public class RoomDataManger {
             AppDataManager.get().getVodCollectDao().delete(record);
         }
     }
-    
-    public static void deleteVodCollectAll() {
-        AppDataManager.get().getVodCollectDao().deleteAll();
-    }
-
-    public static void deleteVodRecordAll() {
-        AppDataManager.get().getVodRecordDao().deleteAll();
-    }
 
     public static boolean isVodCollect(String sourceKey, String vodId) {
         VodCollect record = AppDataManager.get().getVodCollectDao().getVodCollect(sourceKey, vodId);
@@ -153,4 +145,19 @@ public class RoomDataManger {
     public static List<VodCollect> getAllVodCollect() {
         return AppDataManager.get().getVodCollectDao().getAll();
     }
+
+    /**
+     * 删除全部收藏
+     */
+    public static void deleteVodCollectAll() {
+        AppDataManager.get().getVodCollectDao().deleteAll();
+    }
+
+    /**
+     * 删除全部历史记录
+     */
+    public static void deleteVodRecordAll() {
+        AppDataManager.get().getVodRecordDao().deleteAll();
+    }
+
 }
