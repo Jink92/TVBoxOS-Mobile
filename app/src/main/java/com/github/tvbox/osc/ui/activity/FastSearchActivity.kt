@@ -174,6 +174,12 @@ class FastSearchActivity : BaseVbActivity<ActivityFastSearchBinding>(), TextWatc
         }
 
         setLoadSir(mBinding.llLayout)
+
+        // 打开时默认让搜索框获得焦点并弹出输入法
+        mBinding.etSearch.post {
+            mBinding.etSearch.requestFocus()
+            KeyboardUtils.showSoftInput(mBinding.etSearch)
+        }
     }
 
     /**

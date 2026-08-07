@@ -78,6 +78,7 @@
         <activity
             android:name=".ui.activity.FastSearchActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize"
             />
         <activity
             android:name=".ui.activity.SettingActivity"
