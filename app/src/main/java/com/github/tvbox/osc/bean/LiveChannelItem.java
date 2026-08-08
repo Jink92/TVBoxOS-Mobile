@@ -86,6 +86,27 @@ public class LiveChannelItem {
         return channelUrls.get(sourceIndex);
     }
 
+    // 播放地址(去除 m3u 中 #EXTVLCOPT:http-user-agent 附带的后缀)
+    public String getPlayUrl() {
+        String url = getUrl();
+        if (url != null && url.contains("@User-Agent=")) {
+            url = url.substring(0, url.indexOf("@User-Agent="));
+        }
+        return url;
+    }
+
+    // 当前播放地址对应的自定义 User-Agent,未定义返回空串(使用默认请求头)
+    public String getPlayUa() {
+        String url = getUrl();
+        if (url != null && url.contains("@User-Agent=")) {
+            String ua = url.substring(url.indexOf("@User-Agent=") + "@User-Agent=".length());
+            int idx = ua.indexOf('@');
+            if (idx >= 0) ua = ua.substring(0, idx);
+            return ua.trim();
+        }
+        return "";
+    }
+
     public int getSourceNum() {
         return sourceNum;
     }

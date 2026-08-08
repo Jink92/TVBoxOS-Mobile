@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -73,10 +74,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import xyz.doikki.videocontroller.component.LiveControlView;
 import xyz.doikki.videocontroller.component.TitleView;
@@ -390,10 +393,21 @@ public class LiveActivity extends BaseActivity {
         }
         showBottomEpg();
 
-        mVideoView.setUrl(currentLiveChannelItem.getUrl());
-       // showChannelInfo();
+        playChannelWithUa();
         mVideoView.start();
         return true;
+    }
+
+    // 以频道自定义 User-Agent 请求头播放(未定义时使用默认请求头)
+    private void playChannelWithUa() {
+        String playUrl = currentLiveChannelItem.getPlayUrl();
+        String ua = currentLiveChannelItem.getPlayUa();
+        Map<String, String> headers = null;
+        if (!TextUtils.isEmpty(ua)) {
+            headers = new HashMap<>();
+            headers.put("User-Agent", ua);
+        }
+        mVideoView.setUrl(playUrl, headers);
     }
 
     private void playNext() {
@@ -738,7 +752,7 @@ public class LiveActivity extends BaseActivity {
             case 2://播放解码
                 mVideoView.release();
                 livePlayerManager.changeLivePlayerType(mVideoView, position, currentLiveChannelItem.getChannelName());
-                mVideoView.setUrl(currentLiveChannelItem.getUrl());
+                playChannelWithUa();
                 mVideoView.start();
                 break;
             case 3://超时换源
@@ -1113,7 +1127,7 @@ public class LiveActivity extends BaseActivity {
         if (currentLiveChannelItem!=null){
             new XPopup.Builder(this)
                     .maxWidth(ConvertUtils.dp2px(360))
-                    .asCustom(new CastListDialog(this,new CastVideo(currentLiveChannelItem.getChannelName(),currentLiveChannelItem.getUrl())))
+                    .asCustom(new CastListDialog(this,new CastVideo(currentLiveChannelItem.getChannelName(),currentLiveChannelItem.getPlayUrl())))
                     .show();
         }
     }
@@ -1150,7 +1164,7 @@ public class LiveActivity extends BaseActivity {
     public void changePlayer(int position){
         mVideoView.release();
         livePlayerManager.changeLivePlayerType(mVideoView, position, currentLiveChannelItem.getChannelName());
-        mVideoView.setUrl(currentLiveChannelItem.getUrl());
+        playChannelWithUa();
         mVideoView.start();
     }
 
