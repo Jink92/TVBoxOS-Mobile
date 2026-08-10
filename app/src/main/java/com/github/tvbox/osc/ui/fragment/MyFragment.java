@@ -21,6 +21,7 @@ import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.activity.SubscriptionActivity;
 import com.github.tvbox.osc.ui.dialog.AboutDialog;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
+import com.github.tvbox.osc.util.UpdateUtil;
 import com.github.tvbox.osc.util.Utils;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
@@ -73,6 +74,8 @@ public class MyFragment extends BaseVbFragment<FragmentMyBinding> {
         });
 
         mBinding.llSubscription.setOnClickListener(v -> jumpActivity(SubscriptionActivity.class));
+
+        mBinding.llCheckUpdate.setOnClickListener(v -> UpdateUtil.checkUpdate(mActivity, false));
 
         mBinding.llAbout.setOnClickListener(v -> {
             new XPopup.Builder(mActivity)

@@ -9,10 +9,12 @@ import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.github.tvbox.osc.base.BaseVbActivity
 import com.github.tvbox.osc.constant.IntentKey
+import com.github.tvbox.osc.R
 import com.github.tvbox.osc.databinding.ActivityMainBinding
 import com.github.tvbox.osc.ui.fragment.GridFragment
 import com.github.tvbox.osc.ui.fragment.HomeFragment
 import com.github.tvbox.osc.ui.fragment.MyFragment
+import com.github.tvbox.osc.util.UpdateUtil
 import kotlin.system.exitProcess
 
 class MainActivity : BaseVbActivity<ActivityMainBinding>() {
@@ -36,14 +38,32 @@ class MainActivity : BaseVbActivity<ActivityMainBinding>() {
         }
 
         mBinding.bottomNav.setOnNavigationItemSelectedListener { menuItem: MenuItem ->
-            mBinding.vp.setCurrentItem(menuItem.order, false)
-            true
+            when (menuItem.itemId) {
+                R.id.navigation_live -> {
+                    // 底部"直播"按钮:打开直播页面,不切换主页fragment
+                    jumpActivity(LiveActivity::class.java)
+                    false
+                }
+                R.id.navigation_home -> {
+                    mBinding.vp.setCurrentItem(0, false)
+                    true
+                }
+                R.id.navigation_dashboard -> {
+                    mBinding.vp.setCurrentItem(1, false)
+                    true
+                }
+                else -> false
+            }
         }
         mBinding.vp.addOnPageChangeListener(object : SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
-                mBinding.bottomNav.menu.getItem(position).setChecked(true)
+                // 底部菜单"直播"位于首页与我的之间,菜单index需偏移(0->0,1->2)
+                mBinding.bottomNav.menu.getItem(if (position == 1) 2 else position).setChecked(true)
             }
         })
+
+        // 启动自动检测更新(静默模式:无更新/失败不提示)
+        UpdateUtil.checkUpdate(this, true)
     }
 
     override fun onBackPressed() {
