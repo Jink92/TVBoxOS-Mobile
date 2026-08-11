@@ -30,11 +30,7 @@ android {
 
         // Apk 输出配置
         variant.outputs.all { output ->
-            outputFileName = 'TvBox_v' + variant.versionName + '_' + variant.buildType.name
-            if (variant.buildType.name == buildTypes.release.getName()) {
-                outputFileName += '_' + new Date().format("yyyyMMdd")
-            }
-            outputFileName += '.apk'
+            outputFileName = 'Yinghe_mobile.apk'
         }
     }
 
