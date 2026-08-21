@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.blankj.utilcode.util.AppUtils;
 import com.blankj.utilcode.util.ConvertUtils;
@@ -62,6 +63,7 @@ import com.github.tvbox.osc.ui.dialog.CastListDialog;
 import com.github.tvbox.osc.ui.dialog.QuickSearchDialog;
 import com.github.tvbox.osc.ui.dialog.VideoDetailDialog;
 import com.github.tvbox.osc.ui.fragment.PlayFragment;
+import com.github.tvbox.osc.ui.widget.GridSpacingItemDecoration;
 import com.github.tvbox.osc.ui.widget.LinearSpacingItemDecoration;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
@@ -82,6 +84,7 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.AbsCallback;
 import com.lzy.okgo.model.Response;
 import com.orhanobut.hawk.Hawk;
+import com.owen.tvrecyclerview.widget.V7GridLayoutManager;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
 
 import org.greenrobot.eventbus.EventBus;
@@ -169,10 +172,10 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         mBinding.previewPlayerPlace.setVisibility(showPreview ? View.VISIBLE : View.GONE);
 
         mBinding.mGridView.setHasFixedSize(true);
-        mBinding.mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
-        mBinding.mGridView.addItemDecoration(new LinearSpacingItemDecoration(20, false));
+        mBinding.mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, 4));
+        mBinding.mGridView.addItemDecoration(new GridSpacingItemDecoration(4, 20, true));
 
-        seriesAdapter = new SeriesAdapter(false);
+        seriesAdapter = new SeriesAdapter(true);
         mBinding.mGridView.setAdapter(seriesAdapter);
         mBinding.mGridViewFlag.setHasFixedSize(true);
         seriesFlagAdapter = new SeriesFlagAdapter();
@@ -464,7 +467,22 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             if (canSelect)
                 vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex).selected = true;
         }
-        seriesAdapter.setNewData(vodInfo.seriesMap.get(vodInfo.playFlag));
+        List<VodInfo.VodSeries> newList = vodInfo.seriesMap.get(vodInfo.playFlag);
+        // 动态更新GridLayoutManager的列数
+        int newSpanCount = Utils.getSeriesSpanCount(newList);
+        RecyclerView.LayoutManager layoutManager = mBinding.mGridView.getLayoutManager();
+        if (layoutManager instanceof V7GridLayoutManager) {
+            V7GridLayoutManager gridLayoutManager = (V7GridLayoutManager) layoutManager;
+            if (gridLayoutManager.getSpanCount() != newSpanCount) {
+                gridLayoutManager.setSpanCount(newSpanCount);
+                // 移除旧的ItemDecoration，添加新的
+                while (mBinding.mGridView.getItemDecorationCount() > 0) {
+                    mBinding.mGridView.removeItemDecorationAt(0);
+                }
+                mBinding.mGridView.addItemDecoration(new GridSpacingItemDecoration(newSpanCount, 20, true));
+            }
+        }
+        seriesAdapter.setNewData(newList);
 
     }
 
