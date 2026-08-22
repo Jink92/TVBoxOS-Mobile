@@ -1,6 +1,6 @@
 {
-  "versionCode": 37,
-  "versionName": "1.2.5",
-  "updateLog": "1. 底部新增「直播」选项卡，一键进入直播页面\n2. 移除首页右下角浮动直播按钮",
-  "url": "https://tv.jink.top/tvbox/releases/mobile/TvBox_v1.2.5_release_20260810.apk"
+  "versionCode": 39,
+  "versionName": "1.2.7",
+  "updateLog": "1. 界面主色调更新为青绿色\n2. 优化更新下载体验，弹窗实时显示下载进度",
+  "url": "https://tv.jink.top/tvbox/releases/mobile/Yinghe_mobile.apk"
 }
